@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -22,11 +24,11 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity<?> findByEmail(String email){
+    public User findByEmail(String email){
         User userFound = userRepository.findByEmail(email);
         if (userFound == null)
-            return customResponse.getBadRequest("Usuario no encontrado");
-        return customResponse.getJSONResponse(userFound);
+            return null;
+        return userFound;
     }
 
     @Transactional(rollbackFor = Exception.class)
