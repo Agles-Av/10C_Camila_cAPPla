@@ -10,6 +10,7 @@ import mx.camila.aAPPla.modules.user.User;
 import mx.camila.aAPPla.modules.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -22,12 +23,14 @@ public class InitialConfig implements CommandLineRunner {
     private final ImagesRepository imagesRepository;
     private final PubRepository pubRepository;
     private final LikesRepository likesRepository;
+    private final PasswordEncoder encoder;
 
-    public InitialConfig(UserRepository userRepository, ImagesRepository imagesRepository, PubRepository pubRepository, LikesRepository likesRepository) {
+    public InitialConfig(UserRepository userRepository, ImagesRepository imagesRepository, PubRepository pubRepository, LikesRepository likesRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.imagesRepository = imagesRepository;
         this.pubRepository = pubRepository;
         this.likesRepository = likesRepository;
+        this.encoder = encoder;
     }
 
     @Transactional
@@ -77,9 +80,9 @@ public class InitialConfig implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        User usuario1 = getOrSaveUser(new User("Víctor", "cafatofo@gmail.com", "password123", true));
-        User usuario2 = getOrSaveUser(new User("Agles", "agles@gmail.com", "password123", true));
-        User usuario3 = getOrSaveUser(new User("valentin", "valentin@gmail.com", "password123", true));
+        User usuario1 = getOrSaveUser(new User("Víctor", "cafatofo@gmail.com", encoder.encode("password123"), true));
+        User usuario2 = getOrSaveUser(new User("Agles", "agles@gmail.com", encoder.encode("password123"), true));
+        User usuario3 = getOrSaveUser(new User("valentin", "valentin@gmail.com", encoder.encode("password123"), true));
 
         Images img1 = new Images("https://picsum.photos/id/1/200/300");
         Images img2 = new Images("https://picsum.photos/id/2/200/300");
