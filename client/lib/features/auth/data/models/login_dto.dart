@@ -1,8 +1,8 @@
 class LoginDto {
   final String email;
-  final String contrasena;
+  final String password;
 
-  LoginDto({required this.email, required this.contrasena});
+  LoginDto({required this.email, required this.password});
 
-  Map<String, dynamic> toJson() => {"email": email, "contrasena": contrasena};
+  Map<String, dynamic> toJson() => {"email": email, "contrasena": password};
 }
