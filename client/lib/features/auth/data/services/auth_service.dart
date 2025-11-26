@@ -1,4 +1,5 @@
 import 'package:cappla/core/config/dio_client.dart';
+import 'package:cappla/features/auth/data/models/register_dto.dart';
 import '../models/login_dto.dart';
 import '../models/auth_response.dart';
 
@@ -20,12 +21,6 @@ class AuthService {
     throw Exception("Error al iniciar sesión");
   }
 
-  Future<bool> register(Map<String, dynamic> userData) async {
-    final response = await dioClient.dio.post("/auth/register", data: userData);
-
-    return response.statusCode == 200;
-  }
-
   Future<bool> updatePassword(int id, LoginDto dto) async {
     final response = await dioClient.dio.put(
       "/auth/updatePassword/$id",
@@ -42,5 +37,18 @@ class AuthService {
     );
 
     return response.statusCode == 200;
+  }
+
+  Future<bool> register(RegisterDto dto) async {
+    // <--- CAMBIA 'Map' por 'RegisterDto'
+    try {
+      final response = await dioClient.dio.post(
+        "/auth/register",
+        data: dto.toJson(), // <--- AQUÍ SE CONVIERTE A MAP
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Error al registrar");
+    }
   }
 }

@@ -143,14 +143,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
-                // ----- EXTRA -----
-                TextButton(
-                  onPressed: () {
-                    // Implement navigation to password recovery if available
-                  },
-                  child: const Text('¿Olvidaste tu contraseña?'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("¿No tienes cuenta?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: const Text('Regístrate aquí'),
+                    ),
+                  ],
                 ),
               ],
             ),

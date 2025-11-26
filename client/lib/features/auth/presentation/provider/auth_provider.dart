@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cappla/features/auth/data/models/auth_response.dart';
 import 'package:cappla/features/auth/data/models/login_dto.dart';
+import 'package:cappla/features/auth/data/models/register_dto.dart';
 import 'package:cappla/features/auth/data/models/user_model.dart';
 import 'package:cappla/features/auth/data/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,22 @@ class AuthProvider with ChangeNotifier {
     if (storedToken != null && storedUser != null) {
       _token = storedToken;
       _user = UserModel.fromJson(jsonDecode(storedUser));
+      notifyListeners();
+    }
+  }
+
+  Future<bool> register(RegisterDto dto) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Usamos el ! porque ya garantizamos que el servicio existe en el main
+      final success = await _authService!.register(dto);
+      return success;
+    } catch (e) {
+      rethrow; // Re-lanzamos el error para que la UI muestre el SnackBar
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
