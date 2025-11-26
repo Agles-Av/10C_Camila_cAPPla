@@ -13,7 +13,7 @@ class AuthService {
       data: dto.toJson(),
     );
 
-    if (response.statusCode == 200 && response.data != null) {
+    if (response.data != null) {
       return AuthResponse.fromJson(response.data);
     }
 

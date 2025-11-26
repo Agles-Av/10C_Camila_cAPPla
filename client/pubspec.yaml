@@ -7,8 +7,13 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  dio: ^5.9.0
   flutter:
     sdk: flutter
+  provider: ^6.1.5+1
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.5.3
+  flutter_svg: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +22,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+# Agrega esto:
+  assets:
+    - .env
+    - assets/
+    - assets/icons/
