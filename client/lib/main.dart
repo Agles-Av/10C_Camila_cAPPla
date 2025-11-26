@@ -3,6 +3,7 @@ import 'package:cappla/core/config/error_state.dart';
 import 'package:cappla/features/auth/data/services/auth_service.dart';
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/auth/presentation/screens/login_screen.dart';
+import 'package:cappla/features/auth/presentation/screens/register_screen.dart';
 import 'package:cappla/routes/navigation.dart';
 import 'package:cappla/core/utils/splash_screen.dart'; // Asegúrate de importar esto
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class MainApp extends StatelessWidget {
         routes: {
           '/': (context) => const SplashScreen(),
           '/login': (context) => const LoginScreen(),
+          '/register': (context) => const RegisterScreen(),
           '/navigation': (context) => const Navigation(),
         },
       ),
