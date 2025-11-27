@@ -88,25 +88,55 @@ public class PubService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity<?> updatePublication(Publication publication, Long id) {
+    public ResponseEntity<?> updatePublication(
+            Publication publication,
+            Long id,
+            List<MultipartFile> imagenes
+    ) throws IOException {
+
         Optional<Publication> foundPublication = pubRepository.findById(id);
         if (foundPublication.isEmpty()) {
             return response.getBadRequest("Publication not found");
         }
+
         Publication existingPublication = foundPublication.get();
+
         existingPublication.setTitulo(publication.getTitulo());
         existingPublication.setDescripcion(publication.getDescripcion());
-        existingPublication.setLongitud(publication.getLongitud());
         existingPublication.setLatitud(publication.getLatitud());
+        existingPublication.setLongitud(publication.getLongitud());
+
+        // 3. ELIMINAR IMÁGENES ANTIGUAS
+        List<Images> oldImages = existingPublication.getImagenes();
+
+        for (Images img : oldImages) {
+            imagesRepository.delete(img);
+        }
+
         existingPublication.getImagenes().clear();
-        for (Images img : publication.getImagenes()) {
-            img.setPublication(existingPublication);
-            existingPublication.getImagenes().add(img);
+
+        if (imagenes != null && !imagenes.isEmpty()) {
+
+            for (MultipartFile file : imagenes) {
+
+                String url = firebaseImageService.uploadImage(file);
+
+                Images newImg = new Images();
+                newImg.setUrl(url);
+                newImg.setPublication(existingPublication);
+
+                imagesRepository.save(newImg);
+
+                existingPublication.getImagenes().add(newImg);
+            }
         }
 
         Publication updatedPublication = pubRepository.save(existingPublication);
+
         return response.getJSONResponse(updatedPublication);
     }
+
+
 
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<?> findByUser(Long userId) {
