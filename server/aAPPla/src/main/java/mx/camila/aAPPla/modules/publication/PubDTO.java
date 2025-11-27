@@ -17,6 +17,23 @@ public class PubDTO {
     private Float longitud;
     private Float latitud;
 
+    public PubDTO(String titulo, String descripcion, double latitud, double longitud, User user) {
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.longitud = (float) longitud;
+        this.latitud = (float) latitud;
+        this.user = user;
+    }
+
+    public Publication toEntityFirebase() {/*
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.longitud = (float) longitud;
+        this.latitud = (float) latitud;
+        this.user = user;*/
+        return new Publication(titulo, descripcion, imagenes, user, longitud, latitud);
+    }
+
     public Publication toEntity(){
         return new Publication(titulo, descripcion, imagenes, user, longitud, latitud);
     }
