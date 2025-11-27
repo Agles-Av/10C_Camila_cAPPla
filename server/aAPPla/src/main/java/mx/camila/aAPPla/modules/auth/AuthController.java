@@ -1,6 +1,8 @@
 package mx.camila.aAPPla.modules.auth;
 
+import mx.camila.aAPPla.modules.user.User;
 import mx.camila.aAPPla.modules.user.UserDTO;
+import mx.camila.aAPPla.modules.user.UserRepository;
 import mx.camila.aAPPla.modules.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ public class AuthController {
 
     @Autowired
     private UserService usuarioService;
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto dto){
@@ -35,4 +38,13 @@ public class AuthController {
     public ResponseEntity<?> updateProfile(@PathVariable("id") Long id, @RequestBody UserDTO usuario){
         return usuarioService.update(usuario.toEntity(), id);
     }
+
+    @PostMapping("/update-fcm-token")
+    public ResponseEntity<?> updateFcmToken(
+            @RequestParam Long userId,
+            @RequestParam String token
+    ) {
+        return usuarioService.updateFcmToken(userId, token);
+    }
+
 }

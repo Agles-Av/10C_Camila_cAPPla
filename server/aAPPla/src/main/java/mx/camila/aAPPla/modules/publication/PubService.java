@@ -1,5 +1,8 @@
 package mx.camila.aAPPla.modules.publication;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import mx.camila.aAPPla.config.CustomResponse;
 import mx.camila.aAPPla.modules.images.FirebaseImageService;
 import mx.camila.aAPPla.modules.images.Images;
@@ -84,6 +87,19 @@ public class PubService {
         newLike.setPublication(publication);
         newLike.setUser(user);
         likesRepository.save(newLike);
+        User owner = publication.getUser(); // el dueño de la publicación
+
+        if (owner.getFcmToken() != null) {
+
+            String title = "¡Nueva reacción!";
+            String body = user.getNombre() + " le dio like a tu publicación.";
+
+            sendPushNotification(
+                    owner.getFcmToken(),
+                    title,
+                    body
+            );
+        }
         return response.getJSONResponse("Like added successfully");
     }
 
@@ -161,4 +177,26 @@ public class PubService {
         pubRepository.deleteById(id);
         return response.getJSONResponse("Publication deleted successfully");
     }
+
+    public void sendPushNotification(String token, String title, String body) {
+        try {
+            Notification notification = Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
+
+            Message message = Message.builder()
+                    .setToken(token)
+                    .setNotification(notification)
+                    .build();
+
+            FirebaseMessaging.getInstance().send(message);
+
+            System.out.println("Notificación enviada!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
