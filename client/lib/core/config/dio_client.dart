@@ -68,18 +68,23 @@ class DioClient {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('token');
 
-          if (token != null && !options.path.contains('/public')) {
+          // --- CORRECCIÓN AQUÍ ---
+          // En lugar de buscar '/public', excluimos las rutas de '/auth'
+          // (que son login y register, las únicas que no necesitan token).
+
+          final isAuthRoute = options.path.contains('/auth');
+
+          if (token != null && !isAuthRoute) {
             options.headers['Authorization'] = 'Bearer $token';
+            // print("--> Token agregado a ${options.path}"); // Debug
           }
 
           return handler.next(options);
         },
         onError: (DioException e, handler) {
           if (e.response?.statusCode == 401) {
-            // TODO: Manejo de refresh token
-            // TODO: Limpiar sesión si expira
+            // Opcional: Aquí podrías limpiar el token si expiró
           }
-
           return handler.next(e);
         },
       ),
