@@ -4,6 +4,10 @@ import 'package:cappla/features/auth/data/services/auth_service.dart';
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/auth/presentation/screens/login_screen.dart';
 import 'package:cappla/features/auth/presentation/screens/register_screen.dart';
+import 'package:cappla/features/publication/data/service/home_service.dart';
+import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
+import 'package:cappla/features/publication/presentation/screens/home_screen.dart';
+import 'package:cappla/features/shared/providers/navigation_provider.dart';
 import 'package:cappla/routes/navigation.dart';
 import 'package:cappla/core/utils/splash_screen.dart'; // Asegúrate de importar esto
 import 'package:flutter/material.dart';
@@ -33,6 +37,14 @@ class MainApp extends StatelessWidget {
           create: (_) => AuthProvider(),
           update: (_, service, provider) => provider!..update(service),
         ),
+        ProxyProvider<DioClient, HomeService>(
+          update: (_, dio, __) => HomeService(dio),
+        ),
+        ChangeNotifierProxyProvider<HomeService, HomeProvider>(
+          create: (_) => HomeProvider(),
+          update: (_, service, provider) => provider!..update(service),
+        ),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -43,6 +55,7 @@ class MainApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/navigation': (context) => const Navigation(),
+          '/home': (context) => const HomeScreen(),
         },
       ),
     );
