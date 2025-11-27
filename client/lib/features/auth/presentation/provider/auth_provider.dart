@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cappla/core/utils/notification_service.dart';
 import 'package:cappla/features/auth/data/models/auth_response.dart';
 import 'package:cappla/features/auth/data/models/login_dto.dart';
 import 'package:cappla/features/auth/data/models/register_dto.dart';
@@ -31,7 +32,6 @@ class AuthProvider with ChangeNotifier {
   Future<void> login(LoginDto dto) async {
     _isLoading = true;
     notifyListeners();
-
     try {
       final AuthResponse result = await _authService!.login(dto);
 
@@ -39,6 +39,16 @@ class AuthProvider with ChangeNotifier {
       _user = result.user;
 
       await _saveSession();
+
+      try {
+        final fcmToken = await NotificationService.getToken();
+        if (fcmToken != null && _user != null) {
+          await _authService!.syncFcmToken(_user!.id, fcmToken);
+        }
+      } catch (e) {
+        print("No se pudo sincronizar notificaciones: $e");
+        // No hacemos rethrow para no bloquear el login si esto falla
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

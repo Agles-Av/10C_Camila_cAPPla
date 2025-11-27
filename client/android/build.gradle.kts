@@ -1,3 +1,16 @@
+// --- AGREGA ESTE BLOQUE AL PRINCIPIO ---
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Esta es la línea mágica que conecta Firebase
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
+// ---------------------------------------
+
 allprojects {
     repositories {
         google()
