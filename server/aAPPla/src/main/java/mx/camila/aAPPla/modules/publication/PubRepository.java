@@ -13,4 +13,7 @@ public interface PubRepository extends JpaRepository<Publication, Long> {
 
     // este solo es pal initial config
     Publication findByTitulo(String titulo);
+
+    // ultimas adiciones primero
+    List<Publication> findAllByOrderByIdDesc();
 }

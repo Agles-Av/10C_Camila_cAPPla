@@ -95,6 +95,10 @@ public class User {
     public User() {
     }
 
+    public User(Long id) {
+        this.id = id;
+    }
+
     public User(String nombre, String email, String contrasena, Boolean status) {
         this.nombre = nombre;
         this.email = email;
