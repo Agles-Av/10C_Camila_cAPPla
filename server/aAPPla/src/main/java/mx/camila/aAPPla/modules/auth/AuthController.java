@@ -29,9 +29,19 @@ public class AuthController {
         return authService.register(usuario.toEntity());
     }
 
-    @PutMapping("/updatePassword/{id}")
-    public ResponseEntity<?> updatePassword(@PathVariable("id") Long id, @RequestBody LoginDto coso){
-        return authService.updatePassword(id, coso);
+    @PostMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestParam String email, @RequestParam String newPass){
+        return authService.updatePasswordWithCode(email, newPass);
+    }
+
+    @PostMapping("/send-code")
+    public ResponseEntity<?> sendRecoveryCode(@RequestParam String email){
+        return authService.sendRecoveryCode(email);
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyRecoveryCode(@RequestParam String email, @RequestParam String code){
+        return authService.validateRecoveryCode(email, code);
     }
 
     @PutMapping("/updateProfile/{id}")
