@@ -51,4 +51,18 @@ class AuthService {
       throw Exception("Error al registrar");
     }
   }
+
+  Future<void> syncFcmToken(int userId, String token) async {
+    try {
+      // Usamos queryParameters porque en Java usaste @RequestParam
+      // Nota: Verifica si tu backend requiere "/auth/update-fcm-token" o solo "/update-fcm-token"
+      await dioClient.dio.post(
+        "/update-fcm-token",
+        queryParameters: {"userId": userId, "token": token},
+      );
+      print("Token FCM enviado correctamente al servidor.");
+    } catch (e) {
+      print("Error silenciado enviando FCM token: $e");
+    }
+  }
 }

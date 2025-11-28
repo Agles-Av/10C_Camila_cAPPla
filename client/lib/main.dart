@@ -10,6 +10,7 @@ import 'package:cappla/features/publication/presentation/screens/home_screen.dar
 import 'package:cappla/features/shared/providers/navigation_provider.dart';
 import 'package:cappla/routes/navigation.dart';
 import 'package:cappla/core/utils/splash_screen.dart'; // Asegúrate de importar esto
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Importante
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Requerido si el main es async
   await dotenv.load(fileName: ".env"); // Carga las variables
+  await Firebase.initializeApp();
   runApp(const MainApp());
 }
 
