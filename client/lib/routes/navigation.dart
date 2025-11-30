@@ -1,6 +1,7 @@
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/publication/presentation/screens/home_screen.dart';
 import 'package:cappla/features/publication/presentation/screens/map_screen.dart';
+import 'package:cappla/features/publication/presentation/screens/profile_screen.dart';
 import 'package:cappla/features/shared/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,21 +16,10 @@ class Navigation extends StatelessWidget {
     final navProvider = context.watch<NavigationProvider>();
     final currentIndex = navProvider.currentIndex;
 
-    final authProvider = context.watch<AuthProvider>();
-
     final List<Widget> widgetOptions = <Widget>[
       const HomeScreen(), // Tab 0
       const MapScreen(), // Tab 1
-      Center(
-        // Tab 2
-        child: ElevatedButton(
-          onPressed: () {
-            authProvider.logout();
-            Navigator.pushReplacementNamed(context, '/login');
-          },
-          child: const Text("Cerrar Sesión"),
-        ),
-      ),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
