@@ -122,15 +122,6 @@ public class PubService {
         existingPublication.setLatitud(publication.getLatitud());
         existingPublication.setLongitud(publication.getLongitud());
 
-        // 3. ELIMINAR IMÁGENES ANTIGUAS
-        List<Images> oldImages = existingPublication.getImagenes();
-
-        for (Images img : oldImages) {
-            imagesRepository.delete(img);
-        }
-
-        existingPublication.getImagenes().clear();
-
         if (imagenes != null && !imagenes.isEmpty()) {
 
             for (MultipartFile file : imagenes) {
