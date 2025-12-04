@@ -36,6 +36,17 @@ public class User {
     @JsonIgnore
     private List<Likes> likes;
 
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
+    @Column(length = 500)
+    private String fcmToken;
+
     public List<Likes> getLikes() {
         return likes;
     }

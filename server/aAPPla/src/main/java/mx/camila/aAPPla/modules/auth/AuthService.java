@@ -1,6 +1,9 @@
 package mx.camila.aAPPla.modules.auth;
 
 import mx.camila.aAPPla.config.CustomResponse;
+import mx.camila.aAPPla.modules.email.EmailService;
+import mx.camila.aAPPla.modules.email.RecoveryCode;
+import mx.camila.aAPPla.modules.email.RecoveryCodeRepository;
 import mx.camila.aAPPla.modules.user.User;
 import mx.camila.aAPPla.modules.user.UserRepository;
 import mx.camila.aAPPla.security.token.JwtProvider;
@@ -26,6 +29,11 @@ public class AuthService {
     @Autowired
     private CustomResponse customResponse;
 
+    @Autowired
+    private RecoveryCodeRepository recoveryRepo;
+
+    @Autowired
+    private EmailService emailService;
 
     private final AuthenticationManager manager;
     private final JwtProvider provider;
@@ -106,4 +114,77 @@ public class AuthService {
         user.setStatus(true);
         return customResponse.getJSONResponse(useRepository.save(user));
     }
+
+    @Transactional
+    public ResponseEntity<?> sendRecoveryCode(String email) {
+
+        User user = useRepository.findByEmail(email);
+        if (user == null)
+            return customResponse.getBadRequest("El correo no está registrado");
+
+        // generar código de 6 dígitos
+        String code = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+        // eliminar códigos anteriores (opcional)
+        recoveryRepo.findByEmail(email).ifPresent(recoveryRepo::delete);
+
+        // crear entidad
+        RecoveryCode recovery = new RecoveryCode();
+        recovery.setEmail(email);
+        recovery.setCode(code);
+        recovery.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        recovery.setValidated(false);
+
+        recoveryRepo.save(recovery);
+
+        // enviar correo
+        emailService.sendRecoveryCode(email, code);
+
+        return customResponse.getOkResponse("Código enviado al correo");
+    }
+
+    @Transactional
+    public ResponseEntity<?> validateRecoveryCode(String email, String code) {
+
+        Optional<RecoveryCode> optional = recoveryRepo.findByEmailAndCode(email, code);
+
+        if (optional.isEmpty())
+            return customResponse.getBadRequest("Código inválido");
+
+        RecoveryCode recovery = optional.get();
+
+        if (recovery.getExpiresAt().isBefore(LocalDateTime.now()))
+            return customResponse.getBadRequest("El código ha expirado");
+
+        recovery.setValidated(true);
+        recoveryRepo.save(recovery);
+
+        return customResponse.getOkResponse("Código validado con éxito");
+    }
+
+    @Transactional
+    public ResponseEntity<?> updatePasswordWithCode(String email, String newPassword) {
+
+        Optional<RecoveryCode> optional = recoveryRepo.findByEmail(email);
+
+        if (optional.isEmpty())
+            return customResponse.getBadRequest("Primero solicita el código");
+
+        RecoveryCode recovery = optional.get();
+
+        if (!recovery.getValidated())
+            return customResponse.getBadRequest("El código no ha sido validado");
+
+        User user = useRepository.findByEmail(email);
+        if (user == null)
+            return customResponse.getBadRequest("Usuario no encontrado");
+
+        user.setContrasena(encoder.encode(newPassword));
+        useRepository.save(user);
+
+        recoveryRepo.delete(recovery);
+
+        return customResponse.getOkResponse("Contraseña actualizada correctamente");
+    }
+
 }

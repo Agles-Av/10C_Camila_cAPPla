@@ -56,4 +56,16 @@ public class UserService {
         return customResponse.getJSONResponse(updatedUser);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseEntity<?> updateFcmToken(Long id, String token) {
+        var foundUser = userRepository.findById(id);
+        if (foundUser.isEmpty()) {
+            return customResponse.getBadRequest("Usuario no encontrado");
+        }
+        User user = foundUser.get();
+        user.setFcmToken(token);
+        User updatedUser = userRepository.save(user);
+        return customResponse.getJSONResponse(updatedUser);
+    }
+
 }

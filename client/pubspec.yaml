@@ -1,0 +1,35 @@
+name: cappla
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  dio: ^5.9.0
+  flutter:
+    sdk: flutter
+  provider: ^6.1.5+1
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.5.3
+  flutter_svg: ^2.2.2
+  firebase_core: ^4.2.1
+  firebase_messaging: ^16.0.4
+  google_maps_flutter: ^2.14.0
+  image_picker: ^1.2.1
+  geolocator: ^14.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+# Agrega esto:
+  assets:
+    - .env
+    - assets/
+    - assets/icons/

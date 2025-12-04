@@ -1,5 +1,8 @@
 package mx.camila.aAPPla.modules.publication;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import mx.camila.aAPPla.config.CustomResponse;
 import mx.camila.aAPPla.modules.images.FirebaseImageService;
 import mx.camila.aAPPla.modules.images.Images;
@@ -84,29 +87,63 @@ public class PubService {
         newLike.setPublication(publication);
         newLike.setUser(user);
         likesRepository.save(newLike);
+        User owner = publication.getUser(); // el dueño de la publicación
+
+        if (owner.getFcmToken() != null) {
+
+            String title = "¡Nueva reacción!";
+            String body = user.getNombre() + " le dio like a tu publicación.";
+
+            sendPushNotification(
+                    owner.getFcmToken(),
+                    title,
+                    body
+            );
+        }
         return response.getJSONResponse("Like added successfully");
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity<?> updatePublication(Publication publication, Long id) {
+    public ResponseEntity<?> updatePublication(
+            Publication publication,
+            Long id,
+            List<MultipartFile> imagenes
+    ) throws IOException {
+
         Optional<Publication> foundPublication = pubRepository.findById(id);
         if (foundPublication.isEmpty()) {
             return response.getBadRequest("Publication not found");
         }
+
         Publication existingPublication = foundPublication.get();
+
         existingPublication.setTitulo(publication.getTitulo());
         existingPublication.setDescripcion(publication.getDescripcion());
-        existingPublication.setLongitud(publication.getLongitud());
         existingPublication.setLatitud(publication.getLatitud());
-        existingPublication.getImagenes().clear();
-        for (Images img : publication.getImagenes()) {
-            img.setPublication(existingPublication);
-            existingPublication.getImagenes().add(img);
+        existingPublication.setLongitud(publication.getLongitud());
+
+        if (imagenes != null && !imagenes.isEmpty()) {
+
+            for (MultipartFile file : imagenes) {
+
+                String url = firebaseImageService.uploadImage(file);
+
+                Images newImg = new Images();
+                newImg.setUrl(url);
+                newImg.setPublication(existingPublication);
+
+                imagesRepository.save(newImg);
+
+                existingPublication.getImagenes().add(newImg);
+            }
         }
 
         Publication updatedPublication = pubRepository.save(existingPublication);
+
         return response.getJSONResponse(updatedPublication);
     }
+
+
 
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<?> findByUser(Long userId) {
@@ -131,4 +168,26 @@ public class PubService {
         pubRepository.deleteById(id);
         return response.getJSONResponse("Publication deleted successfully");
     }
+
+    public void sendPushNotification(String token, String title, String body) {
+        try {
+            Notification notification = Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
+
+            Message message = Message.builder()
+                    .setToken(token)
+                    .setNotification(notification)
+                    .build();
+
+            FirebaseMessaging.getInstance().send(message);
+
+            System.out.println("Notificación enviada!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

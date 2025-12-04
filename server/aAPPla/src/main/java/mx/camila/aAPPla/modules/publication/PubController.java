@@ -47,8 +47,17 @@ public class PubController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePublication(@RequestBody PubDTO pubDTO, @PathVariable("id") Long id){
-        return pubService.updatePublication(pubDTO.toEntity(), id);
+    public ResponseEntity<?> updatePublication(
+            @RequestParam("titulo") String titulo,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("latitud") double latitud,
+            @RequestParam("longitud") double longitud,
+            @RequestParam("userId") Long userId,
+            @RequestPart(value = "imagenes", required = false) List<MultipartFile> imagenes
+            , @PathVariable("id") Long id)
+            throws IOException {
+        PubDTO dto = new PubDTO(titulo, descripcion, latitud, longitud, new User(userId));
+        return pubService.updatePublication(dto.toEntity(), id, imagenes);
     }
 
     @DeleteMapping("/{id}")

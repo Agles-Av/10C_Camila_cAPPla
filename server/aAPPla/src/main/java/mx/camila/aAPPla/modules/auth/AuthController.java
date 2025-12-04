@@ -1,6 +1,8 @@
 package mx.camila.aAPPla.modules.auth;
 
+import mx.camila.aAPPla.modules.user.User;
 import mx.camila.aAPPla.modules.user.UserDTO;
+import mx.camila.aAPPla.modules.user.UserRepository;
 import mx.camila.aAPPla.modules.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ public class AuthController {
     @Autowired
     private UserService usuarioService;
 
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto dto){
        return authService.login(dto);
@@ -26,13 +29,32 @@ public class AuthController {
         return authService.register(usuario.toEntity());
     }
 
-    @PutMapping("/updatePassword/{id}")
-    public ResponseEntity<?> updatePassword(@PathVariable("id") Long id, @RequestBody LoginDto coso){
-        return authService.updatePassword(id, coso);
+    @PostMapping("/updatePassword")
+    public ResponseEntity<?> updatePassword(@RequestParam String email, @RequestParam String newPass){
+        return authService.updatePasswordWithCode(email, newPass);
+    }
+
+    @PostMapping("/send-code")
+    public ResponseEntity<?> sendRecoveryCode(@RequestParam String email){
+        return authService.sendRecoveryCode(email);
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<?> verifyRecoveryCode(@RequestParam String email, @RequestParam String code){
+        return authService.validateRecoveryCode(email, code);
     }
 
     @PutMapping("/updateProfile/{id}")
     public ResponseEntity<?> updateProfile(@PathVariable("id") Long id, @RequestBody UserDTO usuario){
         return usuarioService.update(usuario.toEntity(), id);
     }
+
+    @PostMapping("/update-fcm-token")
+    public ResponseEntity<?> updateFcmToken(
+            @RequestParam Long userId,
+            @RequestParam String token
+    ) {
+        return usuarioService.updateFcmToken(userId, token);
+    }
+
 }

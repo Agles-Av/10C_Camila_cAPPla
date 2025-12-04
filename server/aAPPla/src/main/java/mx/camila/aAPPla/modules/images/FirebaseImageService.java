@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 
@@ -26,4 +28,5 @@ public class FirebaseImageService {
 
         return String.format("https://storage.googleapis.com/%s/%s", bucket.getName(), fileName);
     }
+
 }
