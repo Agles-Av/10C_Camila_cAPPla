@@ -15,35 +15,31 @@ public class FirebaseConfig {
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
-        // 1. Buscamos la variable en el sistema (La que pondremos en Railway)
+        // 1. Credenciales (JSON en Base64)
         String base64Credentials = System.getenv("FIREBASE_CREDENTIALS");
 
+        // 2. Nombre del Bucket (NUEVO)
+        String bucketName = System.getenv("FIREBASE_BUCKET");
+
         if (base64Credentials == null || base64Credentials.isEmpty()) {
-            // Esto es por si quieres seguir corriendo en local sin configurar la variable,
-            // aunque te recomiendo configurar la variable de entorno en tu IDE también.
-            throw new RuntimeException("ERROR CRÍTICO: No se encontró la variable FIREBASE_CREDENTIALS");
+            throw new RuntimeException("Falta la variable FIREBASE_CREDENTIALS");
         }
 
-        // 2. Decodificamos el Base64 a bytes reales
-        byte[] decodedBytes = Base64.getDecoder().decode(base64Credentials);
+        if (bucketName == null || bucketName.isEmpty()) {
+            throw new RuntimeException("Falta la variable FIREBASE_BUCKET");
+        }
 
-        // 3. Creamos un flujo de datos en memoria (simulando que es un archivo)
+        byte[] decodedBytes = Base64.getDecoder().decode(base64Credentials);
         ByteArrayInputStream serviceAccountStream = new ByteArrayInputStream(decodedBytes);
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccountStream))
+                .setStorageBucket(bucketName)
                 .build();
 
-        // Evita errores si Spring recarga el contexto
-        List<FirebaseApp> apps = FirebaseApp.getApps();
-        if (apps != null && !apps.isEmpty()) {
-            for (FirebaseApp app : apps) {
-                if (app.getName().equals(FirebaseApp.DEFAULT_APP_NAME)) {
-                    return app;
-                }
-            }
+        if (FirebaseApp.getApps().isEmpty()) {
+            return FirebaseApp.initializeApp(options);
         }
-
-        return FirebaseApp.initializeApp(options);
+        return FirebaseApp.getInstance();
     }
 }
