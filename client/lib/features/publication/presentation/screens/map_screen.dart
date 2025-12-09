@@ -1,5 +1,7 @@
+import 'package:cappla/core/utils/map_style.dart';
 import 'package:cappla/features/publication/data/model/publication_model.dart';
 import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
+import 'package:cappla/features/shared/widget/street_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -62,6 +64,7 @@ class _MapScreenState extends State<MapScreen> {
                 onTap: (_) => provider.selectPublication(null),
                 onMapCreated: (controller) {
                   _mapController = controller;
+                  controller.setMapStyle(darkMapStyle);
                   // Si al abrir el mapa ya había algo seleccionado (venimos del feed), movemos cámara
                   if (provider.selectedPublication != null) {
                     controller.animateCamera(
@@ -80,9 +83,9 @@ class _MapScreenState extends State<MapScreen> {
               // 2. LA TARJETA FLOTANTE (Frente)
               if (provider.selectedPublication != null)
                 Positioned(
-                  bottom: 100, // Espacio para el BottomNavigationBar
-                  left: 20,
-                  right: 20,
+                  bottom: 200, // Espacio para el BottomNavigationBar
+                  left: 50,
+                  right: 50,
                   child: _buildFloatingCard(provider.selectedPublication!),
                 ),
             ],
@@ -95,6 +98,7 @@ class _MapScreenState extends State<MapScreen> {
   // Widget pequeño reutilizando estilos
   Widget _buildFloatingCard(PublicationModel pub) {
     return Card(
+      color: Color(Color.fromARGB(255, 2, 56, 31).value),
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
@@ -133,7 +137,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   Text(
                     "Por: ${pub.user.nombre}",
-                    style: const TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: kNeonPink),
                   ),
                   const SizedBox(height: 5),
                   Text(

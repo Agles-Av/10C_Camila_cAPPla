@@ -1,7 +1,9 @@
 import 'dart:io';
+
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/publication/data/model/publication_model.dart';
 import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +22,7 @@ class _PostFormScreenState extends State<PostFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  
+
   List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
 

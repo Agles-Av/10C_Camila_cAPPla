@@ -14,6 +14,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -42,4 +43,17 @@ android {
 
 flutter {
     source = "../.."
+}
+configurations.all {
+    resolutionStrategy {
+        // Forzamos versiones estables que no piden AGP 8.9.1
+        force("androidx.activity:activity:1.9.3")
+        force("androidx.activity:activity-ktx:1.9.3")
+    }
+}
+dependencies {
+    // ... tus otras dependencias ...
+    
+    // --- AGREGA ESTA LÍNEA ---
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

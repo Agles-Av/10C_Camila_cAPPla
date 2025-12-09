@@ -1,6 +1,10 @@
+import 'package:cappla/core/utils/street_alerts.dart'; // Tus alertas tuneadas
+import 'package:cappla/features/auth/data/models/login_dto.dart';
 import 'package:cappla/features/auth/data/models/register_dto.dart';
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
+import 'package:cappla/features/shared/widget/street_widgets.dart'; // Tus widgets callejeros
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -35,7 +39,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final provider = context.read<AuthProvider>();
 
-    // Creamos el DTO basado en lo que pide Java
     final dto = RegisterDto(
       nombre: _nameController.text.trim(),
       email: _emailController.text.trim(),
@@ -47,22 +50,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final success = await provider.register(dto);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cuenta creada exitosamente. Inicia sesión.'),
-          ),
+        // ALERTA TUNEADA
+        StreetAlerts.show(
+          context,
+          "Bienvenido al crew, inicia sesión",
+          AlertType.success,
         );
-        // Regresamos al Login para que ingrese sus credenciales
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Error al registrar usuario. Intenta con otro correo.',
-            ),
-          ),
+        // ALERTA TUNEADA
+        StreetAlerts.show(
+          context,
+          "Error al registrar. Intenta otro correo.",
+          AlertType.error,
         );
       }
     }
@@ -73,7 +75,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final provider = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Crear Cuenta")),
+      // AppBar transparente para que se vea el fondo oscuro
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: kNeonGreen),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
@@ -81,41 +91,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
             key: _formKey,
             child: Column(
               children: [
-                const Text(
-                  'Registro',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                // TÍTULO GRAFFITI
+                Text(
+                  'NUEVO USUARIO',
+                  style: GoogleFonts.permanentMarker(
+                    fontSize: 35,
+                    color: kNeonGreen,
+                    shadows: [
+                      const Shadow(
+                        color: kNeonPink,
+                        offset: Offset(2, 2),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
+                Text(
+                  "Únete al arte urbano",
+                  style: GoogleFonts.montserrat(
+                    color: Colors.grey,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 40),
 
                 // ----- NOMBRE -----
-                TextFormField(
+                StreetInput(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre Completo',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Ingresa tu nombre'
-                      : null,
+                  label: 'Tag / Nombre',
+                  icon: Icons.person_outline,
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Falta tu nombre' : null,
                 ),
                 const SizedBox(height: 20),
 
                 // ----- EMAIL -----
-                TextFormField(
+                StreetInput(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo Electrónico',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
-                  ),
+                  label: 'Correo',
+                  icon: Icons.alternate_email,
                   validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Ingresa tu correo';
-                    if (!RegExp(
-                      r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                    ).hasMatch(value)) {
+                    if (value == null || value.isEmpty) return 'Falta el correo';
+                    if (!RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$").hasMatch(value)) {
                       return 'Correo inválido';
                     }
                     return null;
@@ -123,27 +142,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // ----- CONTRASEÑA -----
+                // ----- CONTRASEÑA (Manual para tener el botón de ver/ocultar) -----
+                // Usamos el estilo del StreetInput pero lo construimos aquí para el suffixIcon
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock),
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    prefixIcon: const Icon(Icons.lock_outline, color: kNeonGreen),
+                    filled: true,
+                    fillColor: kAsphalt,
+                    // Borde estilo StreetInput
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: kNeonGreen, width: 2),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    errorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: kNeonPink, width: 2),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    focusedErrorBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: kNeonPink, width: 2),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    // Icono Ojo
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
                       ),
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Ingresa una contraseña';
+                    if (value == null || value.isEmpty) return 'Ingresa contraseña';
                     if (value.length < 6) return 'Mínimo 6 caracteres';
                     return null;
                   },
@@ -151,14 +190,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20),
 
                 // ----- CONFIRMAR CONTRASEÑA -----
-                TextFormField(
+                StreetInput(
                   controller: _confirmPasswordController,
-                  obscureText: _obscurePassword,
-                  decoration: const InputDecoration(
-                    labelText: 'Confirmar Contraseña',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock_outline),
-                  ),
+                  label: 'Confirmar Contraseña',
+                  icon: Icons.lock_reset,
+                  isPassword: true, // Aquí no ponemos el ojo para no saturar
                   validator: (value) {
                     if (value != _passwordController.text) {
                       return 'Las contraseñas no coinciden';
@@ -166,26 +202,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 35),
+                const SizedBox(height: 40),
 
                 // ----- BOTÓN REGISTRO -----
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: provider.isLoading ? null : _submit,
-                    child: provider.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Registrarme'),
-                  ),
+                StreetButton(
+                  text: "UNIRSE AL CREW", // Texto con más actitud
+                  isLoading: provider.isLoading,
+                  onPressed: _submit,
+                  color: kNeonGreen,
                 ),
+                
+                const SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "¿Ya tienes cuenta? Entra aquí",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
               ],
             ),
           ),

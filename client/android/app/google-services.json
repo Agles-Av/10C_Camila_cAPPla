@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "431176009518",
+    "project_id": "reactmobile5a",
+    "storage_bucket": "reactmobile5a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:431176009518:android:517242e46b81ef999c5cbf",
+        "android_client_info": {
+          "package_name": "com.example.cappla"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAzD2enp6z1U03f4vgrE0tyVDHVy7Zj7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
