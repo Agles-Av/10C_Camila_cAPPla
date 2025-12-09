@@ -2,9 +2,7 @@ import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/publication/data/model/publication_model.dart';
 import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
 import 'package:cappla/features/publication/presentation/screens/post_form_screen.dart';
-import 'package:cappla/features/shared/widget/street_widgets.dart'; // Asegúrate de tener esto importado
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,90 +14,67 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
 
-  // --- MODAL TUNEADO (ESTILO NEUBRUTALISMO) ---
   void _showPostOptions(BuildContext context, PublicationModel pub) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent, // Hacemos transparente para dibujar nuestro propio cuadro
-      builder: (ctx) => Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: kAsphalt, // Fondo oscuro
-          border: Border.all(color: kNeonGreen, width: 2), // Borde Neón
-          boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))], // Sombra dura
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Opción Editar
-              ListTile(
-                leading: const Icon(Icons.edit, color: Colors.white),
-                title: Text("EDITAR GRAFITI", style: GoogleFonts.anton(letterSpacing: 1, color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => PostFormScreen(publication: pub)),
-                  );
-                },
-              ),
-              const Divider(color: Colors.grey, height: 1),
-              // Opción Eliminar
-              ListTile(
-                leading: const Icon(Icons.delete, color: kNeonPink),
-                title: Text("ELIMINAR", style: GoogleFonts.anton(letterSpacing: 1, color: kNeonPink)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _confirmDelete(context, pub.id);
-                },
-              ),
-            ],
-          ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit, color: Colors.blue),
+              title: const Text("Editar Publicación"),
+              onTap: () {
+                Navigator.pop(ctx); // Cierra el modal
+                // Navega al formulario en modo EDITAR
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PostFormScreen(publication: pub)),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text("Eliminar Publicación"),
+              onTap: () {
+                Navigator.pop(ctx); // Cierra el modal
+                _confirmDelete(context, pub.id);
+              },
+            ),
+          ],
         ),
       ),
     );
-  }
+}
 
-  // --- DIÁLOGO DE ALERTA TUNEADO ---
-  void _confirmDelete(BuildContext context, int pubId) {
+void _confirmDelete(BuildContext context, int pubId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kConcrete,
-        shape: const BeveledRectangleBorder(side: BorderSide(color: kNeonPink, width: 2)), // Borde rojo y cuadrado
-        title: Text("¿BORRAR GRAFITI?", style: GoogleFonts.anton(color: Colors.white)),
-        content: const Text(
-          "Esta acción no se puede deshacer. Se perderá para siempre.",
-          style: TextStyle(color: Colors.grey),
-        ),
+        title: const Text("¿Eliminar?"),
+        content: const Text("Esta acción no se puede deshacer."),
         actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancelar")),
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("CANCELAR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kNeonPink,
-              shape: const BeveledRectangleBorder(), // Botón cuadrado
-            ),
             onPressed: () async {
               Navigator.pop(ctx);
               final user = context.read<AuthProvider>().user;
               if (user != null) {
                 await context.read<HomeProvider>().deletePost(pubId, user.id);
               }
-            },
-            child: Text("ELIMINAR", style: GoogleFonts.anton(color: Colors.black)),
+            }, 
+            child: const Text("Eliminar", style: TextStyle(color: Colors.red))
           ),
         ],
       ),
     );
-  }
+}
 
   @override
   void initState() {
     super.initState();
+    // 1. CARGAR DATOS AL INICIAR
+    // Usamos addPostFrameCallback para hacerlo después de que se dibuje el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().user;
       if (user != null) {
@@ -113,91 +88,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authProvider = context.watch<AuthProvider>();
     final currentUser = authProvider.user;
 
+    // 2. LEER DATOS ESPECÍFICOS DEL PERFIL
     final homeProvider = context.watch<HomeProvider>();
-    final myPosts = homeProvider.myPublications;
-    final isLoading = homeProvider.isLoadingProfile;
+    final myPosts = homeProvider.myPublications; // Usamos la nueva lista
+    final isLoading = homeProvider.isLoadingProfile; // Usamos el loading nuevo
     final totalLikes = homeProvider.getTotalLikesFromProfile();
 
     if (currentUser == null) return const Center(child: Text("Sin sesión"));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentUser.nombre.toUpperCase()), // Nombre en mayúsculas se ve más rudo
+        title: Text(currentUser.nombre),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: kNeonPink),
+            icon: const Icon(Icons.logout, color: Colors.red),
             onPressed: () {
               authProvider.logout();
               Navigator.pushReplacementNamed(context, '/login');
             },
-          ),
+          )
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: kNeonGreen))
+      body: isLoading 
+          ? const Center(child: CircularProgressIndicator()) // Loading bonito
           : SingleChildScrollView(
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  
-                  // --- AVATAR CON BORDE NEÓN ---
-                  Container(
-                    padding: const EdgeInsets.all(3), // Espacio para el borde
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: kNeonGreen, width: 2), // Borde verde neón
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: kConcrete,
-                      backgroundImage: currentUser.foto != null
-                          ? NetworkImage(currentUser.foto!)
-                          : null,
-                      child: currentUser.foto == null
-                          ? Text(
-                              currentUser.nombre[0].toUpperCase(),
-                              style: GoogleFonts.anton(fontSize: 60, color: Colors.white),
-                            )
-                          : null,
-                    ),
+                  // ... (El código de la foto y nombre es IGUAL que antes)
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: currentUser.foto != null 
+                        ? NetworkImage(currentUser.foto!) 
+                        : null,
+                    child: currentUser.foto == null
+                        ? Text(currentUser.nombre[0].toUpperCase(), style: const TextStyle(fontSize: 40))
+                        : null,
                   ),
-                  
                   const SizedBox(height: 10),
-                  
-                 
-                  Text(
-                    currentUser.email,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  
-                  const SizedBox(height: 30),
+                  Text(currentUser.nombre, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  Text(currentUser.email, style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 20),
 
-                  // --- ESTADÍSTICAS TUNEADAS ---
+                  // --- ESTADÍSTICAS ---
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatItem("POSTS", myPosts.length.toString()),
-                      Container(width: 1, height: 40, color: Colors.grey), // Separador vertical
-                      _buildStatItem("LIKES", totalLikes.toString()),
+                      _buildStatItem("Publicaciones", myPosts.length.toString()),
+                      _buildStatItem("Likes Recibidos", totalLikes.toString()),
                     ],
                   ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // SEPARADOR ESTILO CALLE
-                  const Divider(color: kNeonGreen, thickness: 2, indent: 20, endIndent: 20),
+                  const SizedBox(height: 20),
+                  const Divider(),
 
                   // --- GRID ---
                   if (myPosts.isEmpty)
-                     Padding(
-                      padding: const EdgeInsets.only(top: 60),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.camera_alt_outlined, size: 50, color: Colors.grey),
-                          const SizedBox(height: 10),
-                          Text("AÚN NO HAY ARTE", style: GoogleFonts.anton(color: Colors.grey, fontSize: 18)),
-                        ],
-                      ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Text("Aún no tienes publicaciones"),
                     )
                   else
                     GridView.builder(
@@ -210,68 +159,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisSpacing: 2,
                       ),
                       itemBuilder: (context, index) {
-                        final pub = myPosts[index];
-                        return GestureDetector(
-                          onTap: () => _showPostOptions(context, pub),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: kConcrete,
-                              // Borde negro fino para separar las fotos
-                              border: Border.all(color: Colors.black, width: 1), 
-                            ),
-                            child: pub.imagenes.isNotEmpty
-                                ? Image.network(
-                                    pub.imagenes[0].url,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.broken_image)),
-                                  )
-                                : const Center(child: Icon(Icons.image_not_supported)),
-                          ),
-                        );
-                      },
+  final pub = myPosts[index];
+  return GestureDetector(
+    onTap: () => _showPostOptions(context, pub),
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[300], // Fondo gris por si no carga
+        border: Border.all(color: Colors.white, width: 1), // Separador blanco
+      ),
+      child: pub.imagenes.isNotEmpty
+          ? Image.network(
+              pub.imagenes[0].url,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => 
+                  const Center(child: Icon(Icons.broken_image)),
+            )
+          : const Center(child: Icon(Icons.image_not_supported)),
+    ),
+  );
+},
+                      
                     ),
-                  
-                  // Espacio final para que no tape el FAB ni el NavBar
-                  const SizedBox(height: 120),
                 ],
               ),
             ),
-            
-      // BOTÓN FLOTANTE TUNEADO
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 100.0),
-        child: FloatingActionButton(
-          backgroundColor: Colors.black,
-          shape: const BeveledRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide(color: kNeonGreen, width: 2),
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const PostFormScreen()),
-            );
-          },
-          elevation: 10,
-          child: const Icon(Icons.add, color: kNeonGreen, size: 30),
-        ),
+          // BOTÓN PARA CREAR NUEVO POST (Preparación para el siguiente paso)
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        onPressed: () {
+          // TODO: Navegar a pantalla de crear post
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PostFormScreen()),
+          );
+        },
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  // WIDGET DE ESTADÍSTICAS REUTILIZABLE
   Widget _buildStatItem(String label, String count) {
     return Column(
       children: [
-        Text(
-          count,
-          style: GoogleFonts.anton(fontSize: 30, color: Colors.white), // Número gigante
-        ),
-        Text(
-          label,
-          style: GoogleFonts.montserrat(color: kNeonGreen, fontWeight: FontWeight.bold, fontSize: 12),
-        ),
+        Text(count, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.grey)),
       ],
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+

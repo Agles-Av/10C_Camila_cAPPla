@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:cappla/core/utils/street_alerts.dart';
+
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/publication/data/model/publication_model.dart';
 import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
-import 'package:cappla/features/shared/widget/street_widgets.dart';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -72,20 +72,19 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
       // 3. Obtener posición actual
       Position position = await Geolocator.getCurrentPosition();
-
+      
       setState(() {
         _lat = position.latitude;
         _lng = position.longitude;
       });
-
-      StreetAlerts.show(
-        context,
-        "Ubicación obtenida correctamente",
-        AlertType.success,
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Ubicación actualizada con éxito"))
       );
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
       );
     } finally {
       setState(() => _gettingLocation = false);
@@ -103,16 +102,23 @@ class _PostFormScreenState extends State<PostFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    // VALIDAR IMÁGENES
+    if (!_isEditing && _selectedImages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Debes seleccionar al menos una imagen")));
+      return;
+    }
 
-   if (!_isEditing && _selectedImages.isEmpty) {
-  StreetAlerts.show(context, "Debes subir al menos una foto", AlertType.error);
-  return;
-}
-
-if (_lat == null || _lng == null) {
-  StreetAlerts.show(context, "Falta la ubicación del grafiti", AlertType.info);
-  return;
-}
+    // VALIDAR UBICACIÓN
+    if (_lat == null || _lng == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Debes agregar la ubicación del grafiti"), 
+          backgroundColor: Colors.orange
+        )
+      );
+      return;
+    }
 
     final homeProvider = context.read<HomeProvider>();
     final user = context.read<AuthProvider>().user;
@@ -143,12 +149,8 @@ if (_lat == null || _lng == null) {
 
     if (success && mounted) {
       Navigator.pop(context);
-      StreetAlerts.show(
-        context,
-        _isEditing
-            ? "Publicación actualizada correctamente"
-            : "Grafiti publicado con éxito",
-        AlertType.success,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_isEditing ? "Publicación actualizada" : "Publicación creada"))
       );
     }
   }
@@ -156,9 +158,7 @@ if (_lat == null || _lng == null) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? "Editar Publicación" : "Nuevo Grafiti"),
-      ),
+      appBar: AppBar(title: Text(_isEditing ? "Editar Publicación" : "Nuevo Grafiti")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -168,30 +168,21 @@ if (_lat == null || _lng == null) {
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: "Título",
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: "Título", border: OutlineInputBorder()),
                 validator: (v) => v!.isEmpty ? "Ingresa un título" : null,
               ),
               const SizedBox(height: 15),
-
+              
               TextFormField(
                 controller: _descController,
-                decoration: const InputDecoration(
-                  labelText: "Descripción",
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: "Descripción", border: OutlineInputBorder()),
                 maxLines: 3,
                 validator: (v) => v!.isEmpty ? "Ingresa una descripción" : null,
               ),
               const SizedBox(height: 20),
 
               // --- SECCIÓN DE UBICACIÓN (NUEVO) ---
-              const Text(
-                "Ubicación",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              const Text("Ubicación", style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -201,48 +192,39 @@ if (_lat == null || _lng == null) {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.location_on,
-                      color: _lat != null ? Colors.red : Colors.grey,
-                    ),
+                    Icon(Icons.location_on, color: _lat != null ? Colors.red : Colors.grey),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        _lat != null
+                        _lat != null 
                             ? "Lat: ${_lat!.toStringAsFixed(4)}, Lng: ${_lng!.toStringAsFixed(4)}"
                             : "No has agregado la ubicación",
                         style: TextStyle(
-                          color: _lat != null ? kNeonPink : Colors.grey,
-                          fontWeight: _lat != null
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          color: _lat != null ? Colors.black : Colors.grey,
+                          fontWeight: _lat != null ? FontWeight.bold : FontWeight.normal
                         ),
                       ),
                     ),
                     if (_gettingLocation)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                      const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                     else
                       TextButton.icon(
-                        onPressed: _getCurrentLocation,
+                        onPressed: _getCurrentLocation, 
                         icon: const Icon(Icons.my_location),
                         label: const Text("Obtener"),
-                      ),
+                      )
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-
               // ------------------------------------
+
               ElevatedButton.icon(
                 onPressed: _pickImages,
                 icon: const Icon(Icons.photo_library),
                 label: const Text("Seleccionar Fotos"),
               ),
-
+              
               // ... (El resto del código de imágenes sigue igual)
               const SizedBox(height: 10),
               SizedBox(
@@ -250,45 +232,26 @@ if (_lat == null || _lng == null) {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    ..._selectedImages.map(
-                      (file) => Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Stack(
-                          children: [
-                            Image.file(
-                              File(file.path),
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
+                    ..._selectedImages.map((file) => Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Stack(
+                        children: [
+                          Image.file(File(file.path), width: 100, height: 100, fit: BoxFit.cover),
+                          Positioned(
+                            right: 0,
+                            child: IconButton(
+                              icon: const Icon(Icons.close, color: Colors.red),
+                              onPressed: () => setState(() => _selectedImages.remove(file)),
                             ),
-                            Positioned(
-                              right: 0,
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () => setState(
-                                  () => _selectedImages.remove(file),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          )
+                        ],
                       ),
-                    ),
+                    )),
                     if (_isEditing && _selectedImages.isEmpty)
-                      ...widget.publication!.imagenes.map(
-                        (img) => Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Image.network(
-                            img.url,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+                      ...widget.publication!.imagenes.map((img) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Image.network(img.url, width: 100, height: 100, fit: BoxFit.cover),
+                      )),
                   ],
                 ),
               ),
@@ -298,20 +261,13 @@ if (_lat == null || _lng == null) {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: context.watch<HomeProvider>().isLoading
-                      ? null
-                      : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                  ),
-                  child: context.watch<HomeProvider>().isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          _isEditing ? "Actualizar" : "Publicar",
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                  onPressed: context.watch<HomeProvider>().isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                  child: context.watch<HomeProvider>().isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(_isEditing ? "Actualizar" : "Publicar", style: const TextStyle(color: Colors.white)),
                 ),
-              ),
+              )
             ],
           ),
         ),

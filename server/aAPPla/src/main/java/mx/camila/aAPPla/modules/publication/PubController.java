@@ -53,7 +53,8 @@ public class PubController {
             @RequestParam("latitud") double latitud,
             @RequestParam("longitud") double longitud,
             @RequestParam("userId") Long userId,
-            @RequestPart("imagenes") List<MultipartFile> imagenes, @PathVariable("id") Long id)
+            @RequestPart(value = "imagenes", required = false) List<MultipartFile> imagenes
+            , @PathVariable("id") Long id)
             throws IOException {
         PubDTO dto = new PubDTO(titulo, descripcion, latitud, longitud, new User(userId));
         return pubService.updatePublication(dto.toEntity(), id, imagenes);

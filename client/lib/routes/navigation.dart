@@ -72,8 +72,8 @@ class _NavigationState extends State<Navigation> {
     final currentIndex = navProvider.currentIndex;
 
     final List<Widget> widgetOptions = <Widget>[
-      const HomeScreen(),
-      const MapScreen(),
+      const HomeScreen(), // Tab 0
+      const MapScreen(), // Tab 1
       const ProfileScreen(),
     ];
 
