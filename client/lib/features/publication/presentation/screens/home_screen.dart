@@ -1,7 +1,11 @@
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
 import 'package:cappla/features/publication/presentation/provider/home_provider.dart';
 import 'package:cappla/features/shared/providers/navigation_provider.dart';
+import 'package:cappla/features/shared/widget/carrusel_widgets.dart';
+import 'package:cappla/features/shared/widget/street_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,156 +45,97 @@ class _HomeScreenState extends State<HomeScreen> {
           final bool isLikedByMe =
               currentUser != null &&
               pub.likes.any((like) => like.user.id == currentUser.id);
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            clipBehavior: Clip.antiAlias,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        return StreetCard(
+  // Pinta el borde rosa si le di like, o verde si es mío (opcional)
+  borderColor: isLikedByMe ? kNeonPink : Colors.black, 
+  
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // HEADER
+      Row(
+        children: [
+          CircleAvatar(
+             backgroundColor: kNeonGreen,
+             child: Text(pub.user.nombre[0], style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 10),
+          Text(pub.user.nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ],
+      ),
+      const SizedBox(height: 10),
+
+      // IMAGEN (Con borde negro fino)
+      StreetCarousel(images: pub.imagenes),
+
+      // ACCIONES
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                isLikedByMe ? Icons.favorite : Icons.favorite_border,
+                // Si no es like, usamos blanco (o gris claro), si es like usamos el Rosa Neón
+                color: isLikedByMe ? kNeonPink : Colors.white,
+              ),
+              onPressed: () {
+                if (currentUser == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Debes iniciar sesión")),
+                  );
+                  return;
+                }
+                context.read<HomeProvider>().toggleLike(pub.id, currentUser);
+              },
+            )
+            .animate(target: isLikedByMe ? 1 : 0) // El controlador
+            .scale(
+              // CORRECCIÓN AQUÍ:
+              begin: const Offset(1.0, 1.0), // Estado 0: Tamaño normal (Visible)
+              end: const Offset(1.3, 1.3),   // Estado 1: Un poco más grande (Efecto "Pump")
+              duration: 200.ms,
+              curve: Curves.elasticOut,
+            )
+            .tint( // Opcional: Un efecto extra de color
+              color: kNeonPink, 
+              end: 0.0, // Solo tiñe durante la transición
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- HEADER DEL USUARIO ---
-                ListTile(
-                  leading: CircleAvatar(
-                    child: Text(pub.user.nombre[0].toUpperCase()),
-                  ),
-                  title: Text(
-                    pub.user.nombre,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  // Opcional: poner fecha o ubicación pequeña aquí
-                ),
-
-                // --- IMAGEN ---
-                SizedBox(
-                  height: 300,
-                  width: double.infinity,
-                  child: pub.imagenes.isNotEmpty
-                      ? PageView.builder(
-                          itemCount: pub.imagenes.length,
-                          itemBuilder: (ctx, imgIndex) {
-                            return Image.network(
-                              pub.imagenes[imgIndex].url,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(
-                                  Icons.broken_image,
-                                  size: 50,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: Colors.grey[200],
-                          child: const Center(child: Text("Sin imagen")),
-                        ),
-                ),
-
-                // --- ACCIONES (LIKES) ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 4.0,
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          isLikedByMe ? Icons.favorite : Icons.favorite_border,
-                          color: isLikedByMe ? Colors.red : Colors.black87,
-                          size: 28,
-                        ),
-                        onPressed: () {
-                          if (currentUser == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Debes iniciar sesión"),
-                              ),
-                            );
-                            return;
-                          }
-
-                          // LLAMADA AL PROVIDER
-                          context.read<HomeProvider>().toggleLike(
-                            pub.id,
-                            currentUser,
-                          );
-                        },
-                      ),
-                      Text(
-                        "$likesCount Me gusta",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.share_outlined),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-
-                // --- DESCRIPCIÓN ---
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 12,
-                    right: 12,
-                    bottom: 16,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        pub.titulo,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(pub.descripcion),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 8.0,
-                  ),
-                  child: InkWell(
-                    // Hacemos que sea tocable
-                    onTap: () {
-                      // 1. Seleccionamos la publicación en el estado global
+            
+            Text("${pub.likes.length}", style: GoogleFonts.anton(fontSize: 18)),
+            
+            const Spacer(),
+            
+            // Botón de mapa estilo "Tag"
+            InkWell(
+              onTap: () { 
+                // 1. Seleccionamos la publicación en el estado global
                       context.read<HomeProvider>().selectPublication(pub);
                       // 2. Cambiamos a la pestaña del mapa (índice 1)
                       context.read<NavigationProvider>().setIndex(1);
-                    },
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          "Ver ubicación en mapa",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                color: Colors.black,
+                child: const Row(
+                  children: [
+                    Icon(Icons.map, color: kNeonGreen, size: 16),
+                    SizedBox(width: 5),
+                    Text("VER UBICACIÓN EN EL MAPA", style: TextStyle(color: kNeonGreen, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
                 ),
-              ],
-            ),
-          );
+              ),
+            )
+          ],
+        ),
+      ),
+      
+      // TEXTOS
+      Text(pub.titulo.toUpperCase(), style: GoogleFonts.anton(fontSize: 20, letterSpacing: 0.5)),
+      Text(pub.descripcion, style: const TextStyle(color: Colors.grey)),
+    ],
+  ),
+).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, curve: Curves.easeOut);
         },
       ),
     );

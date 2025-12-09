@@ -46,7 +46,7 @@ class AuthProvider with ChangeNotifier {
           await _authService!.syncFcmToken(_user!.id, fcmToken);
         }
       } catch (e) {
-        print("No se pudo sincronizar notificaciones: $e");
+        rethrow;
         // No hacemos rethrow para no bloquear el login si esto falla
       }
     } finally {

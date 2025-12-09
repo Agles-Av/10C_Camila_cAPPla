@@ -1,6 +1,9 @@
+import 'package:cappla/core/utils/street_alerts.dart';
 import 'package:cappla/features/auth/data/models/login_dto.dart';
 import 'package:cappla/features/auth/presentation/provider/auth_provider.dart';
+import 'package:cappla/features/shared/widget/street_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -39,15 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to home or root. Adjust route as needed.
         Navigator.pushReplacementNamed(context, '/navigation');
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Credenciales inválidas')));
+        StreetAlerts.show(context, "Credenciales inválidas", AlertType.error);
       }
     } catch (e) {
-      final message = e is Exception ? e.toString() : 'Error inesperado';
-      ScaffoldMessenger.of(
+      StreetAlerts.show(
         context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+        "Revise sus credenciales y vuelva a intentarlo",
+        AlertType.error,
+      );
     }
   }
 
@@ -64,83 +66,73 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Text(
+                  'CAPPLA',
+                  style: GoogleFonts.permanentMarker(
+                    fontSize: 45,
+                    color: kNeonGreen,
+                    shadows: [
+                      const Shadow(
+                        color: kNeonPink,
+                        offset: Offset(2, 2),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
                 const Text(
-                  'Iniciar Sesión',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  "Arte callejero, Kyu",
+                  style: TextStyle(color: Colors.grey, letterSpacing: 2),
                 ),
 
                 const SizedBox(height: 40),
 
-                // ----- EMAIL -----
-                TextFormField(
+                StreetInput(
                   controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Correo',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa tu correo';
-                    }
-                    if (!RegExp(
-                      r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
-                    ).hasMatch(value)) {
-                      return 'Correo inválido';
-                    }
-                    return null;
-                  },
+                  label: 'Correo',
+                  icon: Icons.alternate_email,
+                  validator: (v) => v!.isEmpty ? "Falta el correo" : null,
                 ),
 
                 const SizedBox(height: 20),
 
-                // ----- PASSWORD -----
-                TextFormField(
+                // --- INPUT CONTRASEÑA ACTUALIZADO ---
+                StreetInput(
                   controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+                  label: 'Contraseña',
+                  icon: Icons.lock_outline,
+
+                  // 1. Conectamos la variable de estado
+                  isPassword: _obscurePassword,
+
+                  // 2. Pasamos el botón del ojo como suffixIcon
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Colors.grey, // Color gris para no distraer
                     ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Ingresa tu contraseña';
-                    if (value.length < 6)
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    return null;
-                  },
+
+                  validator: (v) =>
+                      v!.length < 6 ? "Mínimo 6 caracteres" : null,
                 ),
 
+                // ------------------------------------
                 const SizedBox(height: 35),
 
                 // ----- LOGIN BUTTON -----
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: provider.isLoading
-                        ? null
-                        : () => _submit(context),
-                    child: provider.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text('Entrar'),
-                  ),
+                StreetButton(
+                  text: "ENTRAR AHORA",
+                  isLoading: provider.isLoading,
+                  onPressed: () => _submit(context),
                 ),
 
                 const SizedBox(height: 20),
